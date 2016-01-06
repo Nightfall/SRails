@@ -1,12 +1,15 @@
 package moe.nightfall.srails.common
 
 import moe.nightfall.srails.common.init.Blocks
+import moe.nightfall.srails.common.tileentity.Emitter
+import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostInitializationEvent, FMLPreInitializationEvent}
-
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent
 private[srails] class Proxy {
 
   def preInit(e: FMLPreInitializationEvent) {
-
+    FMLCommonHandler.instance().bus().register(this);
     Blocks.init()
 
   }
@@ -22,17 +25,11 @@ private[srails] class Proxy {
 
   }
 
-  /*
+
   @SubscribeEvent
-  def onLivingJumpEvent(event: LivingJumpEvent) {
-    if (event.entity != null) {
-      SRails.log.info(event.entity.toString)
-      // player.setVelocity(player.motionX, player.motionY + addY, player.motionZ);
-      //event.entity.addVelocity(0.0D, 1.0D, 0.0D);
-      event.entity.motionY += 0.1
-      event.entity.isAirBorne = false
-    }
+  def onTickEvent(event: TickEvent): Unit = {
+    Emitter.onTickEvent(event)
   }
-  */
+
 
 }

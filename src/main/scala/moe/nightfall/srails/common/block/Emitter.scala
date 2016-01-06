@@ -2,7 +2,9 @@ package moe.nightfall.srails.common.block
 
 import moe.nightfall.srails.SRails
 import moe.nightfall.srails.common.tileentity
+import net.minecraft.block.state.IBlockState
 import net.minecraft.tileentity.TileEntity
+import net.minecraft.util.BlockPos
 import net.minecraft.world.World
 
 class Emitter extends SimpleBlock {
@@ -19,7 +21,10 @@ class Emitter extends SimpleBlock {
 
   SRails.log.info("created emitter")
 
-  override def createNewTileEntity(worldIn: World, meta: Int): TileEntity = new tileentity.Emitter()
+  override def createNewTileEntity(worldIn: World, meta: Int): TileEntity = new tileentity.Emitter
 
-
+  override def breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
+    super.breakBlock(worldIn, pos, state)
+    worldIn.getTileEntity(pos).asInstanceOf[tileentity.Emitter].disable()
+  }
 }
