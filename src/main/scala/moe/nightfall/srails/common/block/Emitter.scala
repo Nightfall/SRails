@@ -5,22 +5,21 @@ import moe.nightfall.srails.common.tileentity
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.world.World
 
-class Emitter extends SimpleBlock{
-/*
-//copied from openComputers
-and tutorials
-  override def createBlockState(): BlockState = new BlockState(this, PropertyRotatable.Facing, property.PropertyRunning.Running)
+class Emitter extends SimpleBlock {
+  /*
+  //copied from openComputers
+  and tutorials
+    override def createBlockState(): BlockState = new BlockState(this, PropertyRotatable.Facing, property.PropertyRunning.Running)
 
-  override def getStateFromMeta(meta: Int): IBlockState = getDefaultState.withProperty(PropertyRotatable.Facing, EnumFacing.getHorizontal(meta >> 1))
+    override def getStateFromMeta(meta: Int): IBlockState = getDefaultState.withProperty(PropertyRotatable.Facing, EnumFacing.getHorizontal(meta >> 1))
 
-  override def getMetaFromState(state: IBlockState): Int = state.getValue(PropertyRotatable.Facing).getHorizontalIndex << 1 | (if (state.getValue(property.PropertyRunning.Running)) 1 else 0)
+    override def getMetaFromState(state: IBlockState): Int = state.getValue(PropertyRotatable.Facing).getHorizontalIndex << 1 | (if (state.getValue(property.PropertyRunning.Running)) 1 else 0)
 
-  */
+    */
 
-SRails.log.info("created emitter")
+  SRails.log.info("created emitter")
 
   override def createNewTileEntity(worldIn: World, meta: Int): TileEntity = new tileentity.Emitter()
-
 
 
 }
