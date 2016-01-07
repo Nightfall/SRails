@@ -13,9 +13,8 @@
 package moe.nightfall.srails
 
 import moe.nightfall.srails.common.Proxy
-import net.minecraftforge.fml.common.Mod.EventHandler
-import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostInitializationEvent, FMLPreInitializationEvent}
 import net.minecraftforge.fml.common.{Mod, SidedProxy}
+import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostInitializationEvent, FMLPreInitializationEvent}
 import org.apache.logging.log4j.LogManager
 ;
 
@@ -31,7 +30,7 @@ object SRails {
   @SidedProxy(serverSide = "moe.nightfall.srails.server.Proxy", clientSide = "moe.nightfall.srails.client.Proxy")
   var proxy: Proxy = null
 
-  @EventHandler
+  @Mod.EventHandler
   def preInit(e: FMLPreInitializationEvent) {
     log = e.getModLog
     proxy.preInit(e)

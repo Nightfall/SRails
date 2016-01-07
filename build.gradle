@@ -25,7 +25,7 @@ file "build.properties" withReader {
     ext.config = new ConfigSlurper().parse prop
 }
 
-version = "${config.mod.version}"
+version = "${config.srails.version}"
 group = "moe.nightfall.srails" //TODO refactor
 archivesBaseName = "SteveOnRails" //TODO change name
 
@@ -40,7 +40,10 @@ minecraft {
     // stable_#            stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not allways work.
     // simply re-run your setup task after changing the mappings to update your workspace.
-    mappings = "snapshot_20151226"
+    mappings = "snapshot_20160105"
+
+    //replace '@VERSION@', project.version //TODO setup version and mcmod.info
+    //replace '@MC_VERSION@', version
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_7

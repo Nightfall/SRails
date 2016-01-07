@@ -24,7 +24,7 @@ class Emitter extends SimpleBlock {
   override def createNewTileEntity(worldIn: World, meta: Int): TileEntity = new tileentity.Emitter
 
   override def breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-    super.breakBlock(worldIn, pos, state)
     worldIn.getTileEntity(pos).asInstanceOf[tileentity.Emitter].disable()
+    super.breakBlock(worldIn, pos, state)
   }
 }

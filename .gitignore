@@ -26,3 +26,5 @@
 # OS X
 .DS_Store
 /run
+
+*.hprof
