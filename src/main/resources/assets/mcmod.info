@@ -1,0 +1,11 @@
+[
+	{
+		"modid": "srails",
+		"name": "Steve on Rails",
+		"version": "${version}",
+		"mcversion": "${mcversion}",
+		"description": "Its about transporting YOU around",
+		"authorList": [ "Achati" ],
+		"url": "https://github.com/Nightfall/SRails"
+	}
+]

@@ -2,6 +2,8 @@ package moe.nightfall.srails.common
 
 import moe.nightfall.srails.common.init.Blocks
 import moe.nightfall.srails.common.tileentity.Emitter
+import net.minecraft.block.Block
+import net.minecraft.item.Item
 import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostInitializationEvent, FMLPreInitializationEvent}
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
@@ -25,6 +27,9 @@ private[srails] class Proxy {
 
   }
 
+  def registerModel(instance: Item, id: String) {}
+
+  def registerModel(instance: Block, id: String) {}
 
   @SubscribeEvent
   def onTickEvent(event: TickEvent): Unit = {
