@@ -35,7 +35,7 @@ class Emitter extends SimpleBlock {
     //TODO get player facing (including pitch)
 
     getDefaultState
-      .withProperty(PropertyRotatable.FACING, facing.getOpposite)
+      .withProperty(PropertyRotatable.FACING, facing)
       .withProperty(PropertyRotatable.DIRECTION, EnumFacing.getFront(direction))
   }
 
@@ -82,12 +82,12 @@ class Emitter extends SimpleBlock {
     val state: IBlockState = world.getBlockState(pos)
     var facing: EnumFacing = state.getValue(PropertyRotatable.FACING)
     var direction: EnumFacing = state.getValue(PropertyRotatable.DIRECTION)
+    SRails.log.info(s"before rotation: direction $direction facing $facing")
 
     //ignore the original rotation
     for(i: Int <- 1 to 3) {
       facing = facing.rotateAround(axis.getAxis)
       direction = direction.rotateAround(axis.getAxis)
-
       //SRails.log.info(s"for 1 until 4 at $i")
 
       if (isValidFacing(world, pos, facing)) {
@@ -96,7 +96,7 @@ class Emitter extends SimpleBlock {
 
         world.setBlockState(pos,
           state.withProperty(PropertyRotatable.FACING, facing)
-          .withProperty(PropertyRotatable.DIRECTION, direction), 2)
+          .withProperty(PropertyRotatable.DIRECTION, direction), 3)
 
         return true
       }
@@ -107,25 +107,28 @@ class Emitter extends SimpleBlock {
   }
 
   override def getStateFromMeta(meta: Int): IBlockState = {
-    getDefaultState.withProperty(PropertyRotatable.FACING, EnumFacing.getFront(meta & 0x7))
-      .withProperty(PropertyRotatable.DIRECTION, EnumFacing.getFront((meta & 0x63) >>> 3))
+    getDefaultState.withProperty(PropertyRotatable.FACING, EnumFacing.getFront(meta))
   }
 
-  override def getMetaFromState(state: IBlockState): Int = {
-    state.getValue(PropertyRotatable.FACING).ordinal() | state.getValue(PropertyRotatable.FACING).ordinal() << 3
-  }
+  override def getMetaFromState(state: IBlockState): Int = state.getValue(PropertyRotatable.FACING).ordinal()
 
-  override def createNewTileEntity(worldIn: World, meta: Int): TileEntity = new tileentity.Emitter(meta)
+  override def createNewTileEntity(worldIn: World, meta: Int): TileEntity = {
+    val emitter = new tileentity.Emitter
+    //emitter.meta_=(meta)
+    emitter
+  }
 
   override def getActualState(state: IBlockState, world: IBlockAccess, pos: BlockPos): IBlockState = {
     world.getTileEntity(pos) match {
       case emitter: tileentity.Emitter =>
 
-        state//.withProperty(PropertyRotatable.DIRECTION, emitter.direction)
+        state
+          .withProperty(PropertyRotatable.DIRECTION, emitter.direction)
           //.withProperty(PropertyRotatable.FACING, emitter.facing) //data from tile entity
       case _ => state
     }
   }
+
 /*
   override def breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
     worldIn.getTileEntity(pos).asInstanceOf[tileentity.Emitter].disable()

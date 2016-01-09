@@ -3,10 +3,14 @@ package moe.nightfall.srails.common.tileentity
 import javax.vecmath.Vector3d
 
 import moe.nightfall.srails.SRails
+import moe.nightfall.srails.common.block.property.PropertyRotatable
+import net.minecraft.block.state.IBlockState
+import net.minecraft.client.Minecraft
 import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.entity.{Entity, EntityLivingBase}
+import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.{AxisAlignedBB, EnumFacing, ITickable}
+import net.minecraft.util._
 import net.minecraft.world.World
 import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.gameevent.TickEvent
@@ -87,7 +91,7 @@ object Emitter {
     //reverse gravity
     e match {
       case p: EntityPlayerSP =>
-        if (!p.capabilities.isFlying) {
+        if (!p.capabilities.isFlying && Minecraft.getMinecraft.inGameHasFocus) {
           //counteract gravity I hope this doesnt break
           p.motionY += g
         }
@@ -99,21 +103,44 @@ object Emitter {
   }
 }
 
-import moe.nightfall.srails.common.tileentity.Emitter
+import moe.nightfall.srails.common.tileentity.Emitter._
 
-class Emitter(meta: Int) extends TileEntity with ITickable {
+class Emitter extends TileEntity with ITickable {
+  SRails.log.info("called constructor of tileentity.Emitter")
+
+  def facing: EnumFacing = {
+    if (getWorld != null) {
+      SRails.log.info("getFacing")
+
+      getWorld.getBlockState(getPos).getValue(PropertyRotatable.FACING)
+    } else {
+      SRails.log.info("facing return default value")
+      EnumFacing.UP
+    }
+  }
+
+  def direction: EnumFacing = {
+    /*if(getWorld != null) {
+      SRails.log.info("getDirection")
+      getWorld.getBlockState(getPos).getValue(PropertyRotatable.DIRECTION)
+      //val index = (dir & 0x56) >>> 3
+    } else {
+      SRails.log.info("direction return default value")
+      EnumFacing.UP
+    }*/
+    _direction
+  }
+
   //non-static values
   //var facing: EnumFacing = null
-  //var direction: EnumFacing = null
+  private var _direction: EnumFacing = EnumFacing.UP
 
-  def facing = EnumFacing.getFront(meta & 0x7)
-
-  def direction = EnumFacing.getFront((meta & 0x63) >>> 3)
 
   var bounds: AxisAlignedBB = null
   //lazy val bounds: AxisAlignedBB = makeBounds(facing)
 
   private def makeBounds(enumFacing: EnumFacing): AxisAlignedBB = {
+    SRails.log.info(s"makeBounds $enumFacing")
     val baseOffsets: Array[Int] = Array(-1, 10, 2, 2, 2, 2)
 
     def rotateAll(faceArray: Array[EnumFacing], axis: EnumFacing.Axis*): Array[EnumFacing] = {
@@ -134,22 +161,22 @@ class Emitter(meta: Int) extends TileEntity with ITickable {
       case EnumFacing.DOWN =>
         rotateAll(EnumFacing.VALUES, EnumFacing.Axis.X, EnumFacing.Axis.X)
       case EnumFacing.NORTH =>
-        rotateAll(EnumFacing.VALUES, EnumFacing.Axis.X)
+        rotateAll(EnumFacing.VALUES, EnumFacing.Axis.Y, EnumFacing.Axis.Y, EnumFacing.Axis.X)
       case EnumFacing.EAST =>
-        rotateAll(EnumFacing.VALUES, EnumFacing.Axis.X, EnumFacing.Axis.Y)
+        rotateAll(EnumFacing.VALUES, EnumFacing.Axis.Y, EnumFacing.Axis.X)
       case EnumFacing.SOUTH =>
-        rotateAll(EnumFacing.VALUES, EnumFacing.Axis.X, EnumFacing.Axis.Y, EnumFacing.Axis.Y)
+        rotateAll(EnumFacing.VALUES, EnumFacing.Axis.X)
       case EnumFacing.WEST =>
-        rotateAll(EnumFacing.VALUES, EnumFacing.Axis.X, EnumFacing.Axis.Y, EnumFacing.Axis.Y, EnumFacing.Axis.Y)
+        rotateAll(EnumFacing.VALUES, EnumFacing.Axis.Y, EnumFacing.Axis.Y, EnumFacing.Axis.Y, EnumFacing.Axis.X)
     }
 
     new AxisAlignedBB(
-      pos.getX - baseOffsets(index(0).ordinal()),
-      pos.getY - baseOffsets(index(1).ordinal()),
-      pos.getZ - baseOffsets(index(2).ordinal()),
-      pos.getX + baseOffsets(index(3).ordinal()),
-      pos.getY + baseOffsets(index(4).ordinal()),
-      pos.getZ + baseOffsets(index(5).ordinal())
+      pos.getX - baseOffsets(index(EnumFacing.WEST.getIndex).getIndex),
+      pos.getY - baseOffsets(index(EnumFacing.DOWN.getIndex).getIndex),
+      pos.getZ - baseOffsets(index(EnumFacing.NORTH.getIndex).getIndex),
+      pos.getX + baseOffsets(index(EnumFacing.EAST.getIndex).getIndex) + 1,
+      pos.getY + baseOffsets(index(EnumFacing.UP.getIndex).getIndex) + 1,
+      pos.getZ + baseOffsets(index(EnumFacing.SOUTH.getIndex).getIndex) + 1
     )
   }
 
@@ -168,13 +195,15 @@ class Emitter(meta: Int) extends TileEntity with ITickable {
     SRails.log.info(s"invalidate ${bounds.hashCode()} $bounds")
   }
 
-  override def onLoad() {
-    super.onLoad()
-    bounds = makeBounds(facing)
-    addAABB(bounds, getWorld.isRemote)
-    SRails.log.info(s"onLoad ${bounds.hashCode()} $bounds")
-
-  }
+  /*
+    override def onLoad() {
+      srails.SRails.log.info("onLoad")
+      super.onLoad()
+      if(bounds == null) bounds = makeBounds(facing)
+      addAABB(bounds, getWorld.isRemote)
+      SRails.log.info(s"onLoad ${bounds.hashCode()} $bounds")
+    }
+  */
 
   override def onChunkUnload() {
     removeAABB(bounds, getWorld.isRemote)
@@ -182,12 +211,13 @@ class Emitter(meta: Int) extends TileEntity with ITickable {
     super.onChunkUnload()
   }
 
-  def updateRotations() {
-    removeAABB(bounds, getWorld.isRemote)
-    bounds = makeBounds(facing)
-    addAABB(bounds, getWorld.isRemote)
-  }
-
+  /*
+    def updateRotations() {
+      removeAABB(bounds, getWorld.isRemote)
+      bounds = makeBounds(facing)
+      addAABB(bounds, getWorld.isRemote)
+    }
+  */
   @SideOnly(Side.CLIENT)
   def jumpKeyDown = {
     lazy val gameSettings = FMLClientHandler.instance.getClient.gameSettings
@@ -195,10 +225,28 @@ class Emitter(meta: Int) extends TileEntity with ITickable {
   }
 
   override def update() {
-
+    if (bounds == null) {
+      SRails.log.info("makeBounds in update")
+      bounds = makeBounds(facing)
+    }
     val buf: Seq[Entity] = getWorld.getEntitiesWithinAABB(classOf[Entity], bounds).asScala
 
     buf.foreach(onEntityIntersect)
+
+    val pos1 = new BlockPos(bounds.minX, bounds.minY, bounds.minZ)
+    val pos2 = new BlockPos(bounds.maxX, bounds.maxY, bounds.maxZ)
+
+
+
+    if (getWorld.isRemote) {
+      for (x: Double <- (bounds.minX) to bounds.maxX by 1.0;
+           y: Double <- bounds.minY to bounds.maxY by 1.0;
+           z: Double <- bounds.minZ to bounds.maxZ by 1.0) {
+        getWorld.spawnParticle(EnumParticleTypes.PORTAL, x, y, z, 0, 0, 0, 0, 3, 0)
+      }
+
+    }
+
   }
 
   def onEntityIntersect(e: Entity) {
@@ -258,17 +306,30 @@ class Emitter(meta: Int) extends TileEntity with ITickable {
     }
   }
 
-  /*
-    override def readFromNBT(nbt: NBTTagCompound) {
-      super.readFromNBT(nbt)
-      facing = EnumFacing.getFront(nbt.getByte("facing"))
-      direction = EnumFacing.getFront(nbt.getByte("direction"))
-    }
+  override def shouldRefresh(world: World, pos: BlockPos, oldState: IBlockState, newSate: IBlockState): Boolean = {
+    if (oldState.getBlock == newSate.getBlock) {
 
-    override def writeToNBT(nbt: NBTTagCompound) {
-      super.writeToNBT(nbt)
-      nbt.setByte("facing", facing.getIndex.asInstanceOf[Byte])
-      nbt.setByte("direction", direction.getIndex.asInstanceOf[Byte])
+      if (oldState.getValue(PropertyRotatable.FACING) != newSate.getValue(PropertyRotatable.FACING)) {
+        removeAABB(bounds, getWorld.isRemote)
+        bounds = makeBounds(newSate.getValue(PropertyRotatable.FACING))
+        addAABB(bounds, world.isRemote)
+      }
+      _direction = newSate.getValue(PropertyRotatable.DIRECTION)
+      SRails.log.info(s"setNew direction: ${newSate.getValue(PropertyRotatable.DIRECTION)}")
+      return false
     }
-  */
+    true
+  }
+
+
+  override def readFromNBT(nbt: NBTTagCompound) {
+    super.readFromNBT(nbt)
+    _direction = EnumFacing.getFront(nbt.getByte("direction"))
+  }
+
+  override def writeToNBT(nbt: NBTTagCompound) {
+    super.writeToNBT(nbt)
+    nbt.setByte("direction", _direction.ordinal.asInstanceOf[Byte])
+  }
+
 }
