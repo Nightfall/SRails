@@ -28,4 +28,5 @@ private[srails] class Proxy extends CommonProxy {
 
   override def registerModel(instance: Block, id: String) = ModelInitialization.registerModel(instance, id)
 
+  override def isClient = true
 }

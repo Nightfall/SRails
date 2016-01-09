@@ -6,7 +6,7 @@ import moe.nightfall.srails.SRails
 import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.entity.{Entity, EntityLivingBase}
 import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.{AxisAlignedBB, ITickable}
+import net.minecraft.util.{AxisAlignedBB, EnumFacing, ITickable}
 import net.minecraft.world.World
 import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.gameevent.TickEvent
@@ -26,6 +26,7 @@ object Emitter {
   private final val boundsSet = mutable.Set.empty[AxisAlignedBB]
 
   def maxVelo: Double = 0.25;
+
   //soft motion limit
 
   def addAABB(aabb: AxisAlignedBB, remote: Boolean) {
@@ -40,7 +41,9 @@ object Emitter {
     //SRails.log.info(s"removed ${aabb.hashCode()} size: ${boundsSet(remote).size} ")
   }
 
-  def boundsSet(remote: Boolean): mutable.Set[AxisAlignedBB] = {if(remote) boundsSetClient else boundsSet}
+  def boundsSet(remote: Boolean): mutable.Set[AxisAlignedBB] = {
+    if (remote) boundsSetClient else boundsSet
+  }
 
 
   SRails.log.info(s"created companion object $this")
@@ -96,32 +99,93 @@ object Emitter {
   }
 }
 
-import moe.nightfall.srails.common.tileentity.Emitter._
+import moe.nightfall.srails.common.tileentity.Emitter
 
-class Emitter extends TileEntity with ITickable {
+class Emitter(meta: Int) extends TileEntity with ITickable {
   //non-static values
-  lazy val bounds: AxisAlignedBB = new AxisAlignedBB(pos.getX - 3, pos.getY + 1, pos.getZ - 3, pos.getX + 4, pos.getY + 33, pos.getZ + 4) //creates a 3*3 dome above the Block
+  //var facing: EnumFacing = null
+  //var direction: EnumFacing = null
 
-  def disable() {
-    removeAABB(bounds, getWorld.isRemote)
+  def facing = EnumFacing.getFront(meta & 0x7)
+
+  def direction = EnumFacing.getFront((meta & 0x63) >>> 3)
+
+  var bounds: AxisAlignedBB = null
+  //lazy val bounds: AxisAlignedBB = makeBounds(facing)
+
+  private def makeBounds(enumFacing: EnumFacing): AxisAlignedBB = {
+    val baseOffsets: Array[Int] = Array(-1, 10, 2, 2, 2, 2)
+
+    def rotateAll(faceArray: Array[EnumFacing], axis: EnumFacing.Axis*): Array[EnumFacing] = {
+      val result: Array[EnumFacing] = new Array[EnumFacing](faceArray.size)
+      for (i: Int <- faceArray.indices) {
+        var temp: EnumFacing = faceArray(i)
+        axis.foreach(axis => {
+          temp = temp.rotateAround(axis)
+        })
+        result(i) = temp
+      }
+      result
+    }
+
+    val index: Array[EnumFacing] = enumFacing match {
+      case EnumFacing.UP =>
+        EnumFacing.VALUES
+      case EnumFacing.DOWN =>
+        rotateAll(EnumFacing.VALUES, EnumFacing.Axis.X, EnumFacing.Axis.X)
+      case EnumFacing.NORTH =>
+        rotateAll(EnumFacing.VALUES, EnumFacing.Axis.X)
+      case EnumFacing.EAST =>
+        rotateAll(EnumFacing.VALUES, EnumFacing.Axis.X, EnumFacing.Axis.Y)
+      case EnumFacing.SOUTH =>
+        rotateAll(EnumFacing.VALUES, EnumFacing.Axis.X, EnumFacing.Axis.Y, EnumFacing.Axis.Y)
+      case EnumFacing.WEST =>
+        rotateAll(EnumFacing.VALUES, EnumFacing.Axis.X, EnumFacing.Axis.Y, EnumFacing.Axis.Y, EnumFacing.Axis.Y)
+    }
+
+    new AxisAlignedBB(
+      pos.getX - baseOffsets(index(0).ordinal()),
+      pos.getY - baseOffsets(index(1).ordinal()),
+      pos.getZ - baseOffsets(index(2).ordinal()),
+      pos.getX + baseOffsets(index(3).ordinal()),
+      pos.getY + baseOffsets(index(4).ordinal()),
+      pos.getZ + baseOffsets(index(5).ordinal())
+    )
   }
 
+
+  /*
+    override def validate() {
+      super.validate()
+      addAABB(bounds, getWorld.isRemote)
+      SRails.log.info(s"validate ${bounds.hashCode()} $bounds")
+    }
+  */
+
   override def invalidate() {
-    removeAABB(bounds, getWorld.isRemote)
     super.invalidate()
+    removeAABB(bounds, getWorld.isRemote)
+    SRails.log.info(s"invalidate ${bounds.hashCode()} $bounds")
   }
 
   override def onLoad() {
     super.onLoad()
+    bounds = makeBounds(facing)
     addAABB(bounds, getWorld.isRemote)
-    SRails.log.info(s"onLoad")
-  }
+    SRails.log.info(s"onLoad ${bounds.hashCode()} $bounds")
 
+  }
 
   override def onChunkUnload() {
     removeAABB(bounds, getWorld.isRemote)
-    SRails.log.info(s"onLoad")
+    SRails.log.info(s"onChunkUnLoad ${bounds.hashCode()} $bounds")
     super.onChunkUnload()
+  }
+
+  def updateRotations() {
+    removeAABB(bounds, getWorld.isRemote)
+    bounds = makeBounds(facing)
+    addAABB(bounds, getWorld.isRemote)
   }
 
   @SideOnly(Side.CLIENT)
@@ -131,6 +195,7 @@ class Emitter extends TileEntity with ITickable {
   }
 
   override def update() {
+
     val buf: Seq[Entity] = getWorld.getEntitiesWithinAABB(classOf[Entity], bounds).asScala
 
     buf.foreach(onEntityIntersect)
@@ -192,4 +257,18 @@ class Emitter extends TileEntity with ITickable {
       e.motionZ = motion.z
     }
   }
+
+  /*
+    override def readFromNBT(nbt: NBTTagCompound) {
+      super.readFromNBT(nbt)
+      facing = EnumFacing.getFront(nbt.getByte("facing"))
+      direction = EnumFacing.getFront(nbt.getByte("direction"))
+    }
+
+    override def writeToNBT(nbt: NBTTagCompound) {
+      super.writeToNBT(nbt)
+      nbt.setByte("facing", facing.getIndex.asInstanceOf[Byte])
+      nbt.setByte("direction", direction.getIndex.asInstanceOf[Byte])
+    }
+  */
 }
