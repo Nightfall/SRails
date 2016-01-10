@@ -1,3 +1,6 @@
+# SRails [![Travis build staus](https://img.shields.io/travis/Nightfall/SRails/master.svg)](https://travis-ci.org/Nightfall/SRails/branches)
+
+
 
 A few useful links:
 * [Bug Tracker][issues]
