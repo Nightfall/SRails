@@ -1,4 +1,4 @@
-# SRails [![Jenkins Build Status](http://img.shields.io/jenkins/s/http/jenkins.rx14.co.uk/job/Nightfall/SRails.svg)] [Travis build staus](https://img.shields.io/travis/Nightfall/SRails/master.svg)](https://travis-ci.org/Nightfall/SRails/branches)
+# SRails [![Jenkins Build Status](http://img.shields.io/jenkins/s/http/jenkins.rx14.co.uk/job/Nightfall/SRails.svg)](http://jenkins.rx14.co.uk/job/Nightfall/job/SRails/) [![Travis build staus](https://img.shields.io/travis/Nightfall/SRails/master.svg)](https://travis-ci.org/Nightfall/SRails/branches)
 
 
 
