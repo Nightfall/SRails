@@ -7,7 +7,7 @@ A few useful links:
 
 # Use in Modpacks
 
-Sadly there is no  stable release that is usable in mopacks yet
+Sadly there is no  stable release that is usable in modpacks yet
 check back later
 
 # Releases
@@ -48,7 +48,7 @@ to create an IntelliJ IDEA project.
 
 Open the project and you will be asked to *import the Gradle project* (check your Event Log if you missed the pop-up). **Do so**. This will configure additionally referenced libraries.
 
-Use the customizable gradle wrapper if it doesnt work or get stuck
+Use the customizable gradle wrapper if it doesn't work or get stuck
 or a recent local gradle version (2.9 or 2.10)
 
 In the case you wish to use Eclipse rather than IntelliJ IDEA, the process is mostly the same, except you must run `gradlew eclipse` rather than `gradlew idea`.
@@ -70,7 +70,7 @@ we have 3 types of branches
 before rebasing:
 - [Squash](http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html) your commits into logical units!
 - [rebase](http://gitready.com/intermediate/2009/01/31/intro-to-rebase.html) changes in master into your branch (instead of merging)
-- make sure you followed the guidelines
+- Make sure you followed the guidelines
 
 
 The following are a few quick guidelines on pull requests. That is to say they are not necessarily *rules*, so there may be exceptions and all that. Just try to stick to those points as a baseline.
@@ -78,7 +78,7 @@ The following are a few quick guidelines on pull requests. That is to say they a
 - Make sure it builds and works.
 - Try to keep your changes as minimal as possible. In particular, no whitespace changes in existing files, please.
 - Use the [Staging Area](http://gitready.com/beginner/2009/01/18/the-staging-area.html) when committing
-- dont mess up :P
+- don't mess up :P
 
 create a PR: https://github.com/Nightfall/SRails/compare/feature-name
 
