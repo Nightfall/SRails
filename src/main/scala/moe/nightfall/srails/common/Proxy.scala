@@ -1,7 +1,7 @@
 package moe.nightfall.srails.common
 
 import moe.nightfall.srails.common.init.Blocks
-import moe.nightfall.srails.common.tileentity.Emitter
+import moe.nightfall.srails.common.tileentity.traits.AntiGravity
 import net.minecraft.block.Block
 import net.minecraft.item.Item
 import net.minecraftforge.fml.common.FMLCommonHandler
@@ -36,7 +36,7 @@ private[srails] class Proxy {
 
   @SubscribeEvent
   def onTickEvent(event: TickEvent): Unit = {
-    Emitter.onTickEvent(event)
+    AntiGravity.onTickEvent(event)
   }
 
 

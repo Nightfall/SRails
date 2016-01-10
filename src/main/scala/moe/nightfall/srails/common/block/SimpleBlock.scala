@@ -12,4 +12,5 @@ abstract class SimpleBlock(material: Material = Material.iron) extends BlockCont
 
   def createItemStack(amount: Int = 1) = new ItemStack(this, amount)
 
+  override def getRenderType: Int = 3
 }

@@ -1,6 +1,12 @@
 {
-  "parent": "block/cube_all",
+  "parent": "block/cube",
   "textures": {
-    "all": "srails:blocks/emitter"
+    "particle": "#side",
+    "down": "#side",
+    "up": "#front",
+    "north": "#side",
+    "east": "#side",
+    "south": "#side",
+    "west": "#side"
   }
 }

@@ -4,109 +4,23 @@ import javax.vecmath.Vector3d
 
 import moe.nightfall.srails.SRails
 import moe.nightfall.srails.common.block.property.PropertyRotatable
+import moe.nightfall.srails.common.tileentity.traits.AntiGravity
+import moe.nightfall.srails.common.tileentity.traits.AntiGravity._
 import net.minecraft.block.state.IBlockState
-import net.minecraft.client.Minecraft
 import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.entity.{Entity, EntityLivingBase}
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util._
 import net.minecraft.world.World
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.common.gameevent.TickEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent.{ClientTickEvent, WorldTickEvent}
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 import scala.util.Random
 
-object Emitter {
-  final val g = 0.08D * 0.9800000190734863D
-  //0.0784000015258789 //Gravity
-
-  @SideOnly(Side.CLIENT)
-  private final val boundsSetClient = mutable.Set.empty[AxisAlignedBB]
-
-  private final val boundsSet = mutable.Set.empty[AxisAlignedBB]
+class Emitter extends TileEntity with AntiGravity with ITickable {
 
   def maxVelo: Double = 0.25;
-
-  //soft motion limit
-
-  def addAABB(aabb: AxisAlignedBB, remote: Boolean) {
-    //SRails.log.info(s"before size: ${boundsSet(remote).size} ")
-    boundsSet(remote) += aabb
-    //SRails.log.info(s"added ${aabb.hashCode()} size: ${boundsSet(remote).size} ")
-  }
-
-  def removeAABB(aabb: AxisAlignedBB, remote: Boolean) {
-    //SRails.log.info(s"before ${boundsSet(remote).size} contains? ${boundsSet(remote).contains(aabb)}")
-    boundsSet(remote) -= aabb
-    //SRails.log.info(s"removed ${aabb.hashCode()} size: ${boundsSet(remote).size} ")
-  }
-
-  def boundsSet(remote: Boolean): mutable.Set[AxisAlignedBB] = {
-    if (remote) boundsSetClient else boundsSet
-  }
-
-
-  SRails.log.info(s"created companion object $this")
-
-  //called from Proxy
-  def onTickEvent(event: TickEvent) {
-    if ((event.`type` == TickEvent.Type.CLIENT || event.`type` == TickEvent.Type.WORLD || event.`type` == TickEvent.Type.SERVER)
-      && event.phase == TickEvent.Phase.END) {
-
-      //SRails.log.debug(s"event ${event.`type`} side ${event.side}")
-
-      var world: World = null
-      val entitySet = mutable.Set.empty[Entity]
-      var set: mutable.Set[AxisAlignedBB] = null
-      event match {
-        case worldTickEvent: WorldTickEvent =>
-          //maybe useless
-          world = worldTickEvent.world
-          set = boundsSet
-        case clientTickEvent: ClientTickEvent =>
-          val player: EntityPlayerSP = FMLClientHandler.instance.getClientPlayerEntity
-          set = boundsSetClient
-          if (player != null) {
-            world = player.worldObj
-          } else return
-        case _ => return
-      }
-
-      //SRails.log.info(s"tick for ${world}")
-      if (world != null) {
-        set.foreach(aabb => if (aabb != null) {
-          entitySet ++= world.getEntitiesWithinAABB(classOf[Entity], aabb).asScala
-        })
-        entitySet.foreach(reverseGravity)
-      }
-    }
-  }
-
-  def reverseGravity(e: Entity) {
-    //SRails.log.info(s"reverseGravity for ${e}")
-    //reverse gravity
-    e match {
-      case p: EntityPlayerSP =>
-        if (!p.capabilities.isFlying && Minecraft.getMinecraft.inGameHasFocus) {
-          //counteract gravity I hope this doesnt break
-          p.motionY += g
-        }
-      case _ =>
-        e.motionY += g
-    }
-
-    //SRails.log.info(s"motionY ${e.motionY}")
-  }
-}
-
-import moe.nightfall.srails.common.tileentity.Emitter._
-
-class Emitter extends TileEntity with ITickable {
-  SRails.log.info("called constructor of tileentity.Emitter")
 
   def facing: EnumFacing = {
     if (getWorld != null) {
@@ -226,11 +140,7 @@ class Emitter extends TileEntity with ITickable {
 
     buf.foreach(onEntityIntersect)
 
-    val pos1 = new BlockPos(bounds.minX, bounds.minY, bounds.minZ)
-    val pos2 = new BlockPos(bounds.maxX, bounds.maxY, bounds.maxZ)
-
     val r = new Random()
-
     if (getWorld.isRemote) {
       for (x: Double <- bounds.minX to bounds.maxX by 0.5;
            y: Double <- bounds.minY to bounds.maxY by 0.5;
@@ -258,19 +168,15 @@ class Emitter extends TileEntity with ITickable {
       e match {
         case p: EntityPlayerSP =>
           if (jumpKeyDown) motion.y += 0.01
-
+          if(p.isSneaking) motion.y -= 0.01
         case l: EntityLivingBase =>
 
         case _ =>
       }
 
-      //--add velocity.--//
+      //--slow down--//
 
-      val vec: Vec3i = {if(isReverse) facing.getOpposite else facing}.getDirectionVec
-      val motionDirection: Vector3d = new Vector3d(vec.getX, vec.getY, vec.getZ)
-      motionDirection.normalize()
-      motionDirection.scale(0.01)
-      motion.add(motionDirection)
+      motion.scale(1d - 1d / 64d) //general drag inside the field
 
       //--limit velocity--//
 
@@ -278,14 +184,26 @@ class Emitter extends TileEntity with ITickable {
         val scale = 1 - (((motion.length - maxVelo) / 2) / motion.length()) //TODO simplify if possible
         motion.scale(scale)
 
-        if (e.isInstanceOf[EntityPlayerSP]) {
-          //SRails.log.info(s"scale: $scale")
-        }
+        //if (e.isInstanceOf[EntityPlayerSP]) {
+        //SRails.log.info(s"scale: $scale")
+        //}
       }
 
-      //--slow down--//
+      //--add velocity--//
 
-      motion.scale(1d - 1d / 64d) //general drag inside the field
+      val scale = facing match {
+        case EnumFacing.UP => 0.005
+        case EnumFacing.DOWN => 0.06
+        case _ => 0.01
+      }
+      val vec: Vec3i = {if(isReverse) facing.getOpposite else facing}.getDirectionVec
+      val motionDirection: Vector3d = new Vector3d(vec.getX, vec.getY, vec.getZ)
+      motionDirection.normalize()
+      motionDirection.scale(scale)
+      ///motion.add(motionDirection)
+
+
+
 
       //--print debug--//
       /*

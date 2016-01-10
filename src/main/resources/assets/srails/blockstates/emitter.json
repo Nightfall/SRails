@@ -1,7 +1,33 @@
 {
+  "forge_marker": 1,
+  "defaults": {
+    "textures": {
+      "side": "srails:blocks/emitter_side",
+      "front": "srails:blocks/emitter_out"
+    },
+    "model": "srails:emitter",
+    "uvlock": true
+  },
   "variants": {
-    "normal": {
-      "model": "srails:emitter"
+    "normal": [{}],
+    "inventory": [{
+        "transform": "forge:default-block"
+      }],
+    "facing": {
+      "down": {"x": 180},
+      "up": {},
+      "north": {"x": 90},
+      "east": {"x": 90, "y": 90},
+      "south": {"x": 90, "y": 180},
+      "west": {"x": 90, "y": 270}
+    },
+    "reverse": {
+      "false": {},
+      "true": {
+        "textures": {
+          "front": "srails:blocks/emitter_in"
+        }
+      }
     }
   }
 }
