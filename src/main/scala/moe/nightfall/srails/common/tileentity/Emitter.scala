@@ -8,7 +8,6 @@ import net.minecraft.block.state.IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.entity.{Entity, EntityLivingBase}
-import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util._
 import net.minecraft.world.World
@@ -19,6 +18,7 @@ import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.util.Random
 
 object Emitter {
   final val g = 0.08D * 0.9800000190734863D
@@ -110,8 +110,6 @@ class Emitter extends TileEntity with ITickable {
 
   def facing: EnumFacing = {
     if (getWorld != null) {
-      SRails.log.info("getFacing")
-
       getWorld.getBlockState(getPos).getValue(PropertyRotatable.FACING)
     } else {
       SRails.log.info("facing return default value")
@@ -119,21 +117,14 @@ class Emitter extends TileEntity with ITickable {
     }
   }
 
-  def direction: EnumFacing = {
-    /*if(getWorld != null) {
-      SRails.log.info("getDirection")
-      getWorld.getBlockState(getPos).getValue(PropertyRotatable.DIRECTION)
-      //val index = (dir & 0x56) >>> 3
+  def isReverse: Boolean = {
+    if(getWorld != null) {
+      getWorld.getBlockState(getPos).getValue(PropertyRotatable.REVERSE)
     } else {
-      SRails.log.info("direction return default value")
-      EnumFacing.UP
-    }*/
-    _direction
+      SRails.log.info("isReverse return default value")
+      false
+    }
   }
-
-  //non-static values
-  //var facing: EnumFacing = null
-  private var _direction: EnumFacing = EnumFacing.UP
 
 
   var bounds: AxisAlignedBB = null
@@ -141,7 +132,7 @@ class Emitter extends TileEntity with ITickable {
 
   private def makeBounds(enumFacing: EnumFacing): AxisAlignedBB = {
     SRails.log.info(s"makeBounds $enumFacing")
-    val baseOffsets: Array[Int] = Array(-1, 10, 2, 2, 2, 2)
+    val baseOffsets: Array[Int] = Array(-1, 32, 2, 2, 2, 2)
 
     def rotateAll(faceArray: Array[EnumFacing], axis: EnumFacing.Axis*): Array[EnumFacing] = {
       val result: Array[EnumFacing] = new Array[EnumFacing](faceArray.size)
@@ -224,10 +215,12 @@ class Emitter extends TileEntity with ITickable {
     gameSettings.keyBindJump.isKeyDown
   }
 
+
   override def update() {
     if (bounds == null) {
       SRails.log.info("makeBounds in update")
       bounds = makeBounds(facing)
+      addAABB(bounds, getWorld.isRemote)
     }
     val buf: Seq[Entity] = getWorld.getEntitiesWithinAABB(classOf[Entity], bounds).asScala
 
@@ -236,16 +229,17 @@ class Emitter extends TileEntity with ITickable {
     val pos1 = new BlockPos(bounds.minX, bounds.minY, bounds.minZ)
     val pos2 = new BlockPos(bounds.maxX, bounds.maxY, bounds.maxZ)
 
-
+    val r = new Random()
 
     if (getWorld.isRemote) {
-      for (x: Double <- (bounds.minX) to bounds.maxX by 1.0;
-           y: Double <- bounds.minY to bounds.maxY by 1.0;
-           z: Double <- bounds.minZ to bounds.maxZ by 1.0) {
+      for (x: Double <- bounds.minX to bounds.maxX by 0.5;
+           y: Double <- bounds.minY to bounds.maxY by 0.5;
+           z: Double <- bounds.minZ to bounds.maxZ by 0.5) {
+        if(r.nextDouble() < 0.05)
         getWorld.spawnParticle(EnumParticleTypes.PORTAL, x, y, z, 0, 0, 0, 0, 3, 0)
       }
-
     }
+
 
   }
 
@@ -269,6 +263,14 @@ class Emitter extends TileEntity with ITickable {
 
         case _ =>
       }
+
+      //--add velocity.--//
+
+      val vec: Vec3i = {if(isReverse) facing.getOpposite else facing}.getDirectionVec
+      val motionDirection: Vector3d = new Vector3d(vec.getX, vec.getY, vec.getZ)
+      motionDirection.normalize()
+      motionDirection.scale(0.01)
+      motion.add(motionDirection)
 
       //--limit velocity--//
 
@@ -314,14 +316,13 @@ class Emitter extends TileEntity with ITickable {
         bounds = makeBounds(newSate.getValue(PropertyRotatable.FACING))
         addAABB(bounds, world.isRemote)
       }
-      _direction = newSate.getValue(PropertyRotatable.DIRECTION)
-      SRails.log.info(s"setNew direction: ${newSate.getValue(PropertyRotatable.DIRECTION)}")
       return false
     }
     true
   }
 
-
+/*
+dont need nbt data for now, breaks apperently when trying to set from block
   override def readFromNBT(nbt: NBTTagCompound) {
     super.readFromNBT(nbt)
     _direction = EnumFacing.getFront(nbt.getByte("direction"))
@@ -331,5 +332,5 @@ class Emitter extends TileEntity with ITickable {
     super.writeToNBT(nbt)
     nbt.setByte("direction", _direction.ordinal.asInstanceOf[Byte])
   }
-
+*/
 }
