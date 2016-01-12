@@ -24,7 +24,15 @@ object AntiGravity extends EffectOnClientTick with EffectOnWorldTick{
   }
 
   override def onEntityIntersect(entity: Entity, clientTickEvent: ClientTickEvent): Unit = {
-
+    entity match {
+      case p: EntityPlayerSP =>
+        if (!p.capabilities.isFlying && Minecraft.getMinecraft.inGameHasFocus) {
+          //counteract gravity I hope this doesnt break
+          p.motionY += g
+        }
+      case _ =>
+        entity.motionY += g
+    }
   }
   def reverseGravity(e: Entity) {
 

@@ -17,8 +17,6 @@ abstract class SimpleEmitter extends TileEntity with ITickable with Rotatable wi
 
   lazy val fieldOffsets: Array[Int] = Array(-1, 32, 2, 2, 2, 2)
 
-  def maxVelo: Double = 0.25
-
   protected var forceFieldBounds: AxisAlignedBB = null
 
   protected val effectsList: ArrayBuffer[ForceFieldEffect]
@@ -101,7 +99,7 @@ abstract class SimpleEmitter extends TileEntity with ITickable with Rotatable wi
     }
     val buf: Seq[Entity] = getWorld.getEntitiesWithinAABB(classOf[Entity], forceFieldBounds).asScala
 
-    buf.foreach(onEntityIntersect)
+    EffectOnIntersect.onEntityIntersect(buf, effectsList, this)
 
     val r = new Random()
     if (getWorld.isRemote) {
@@ -119,15 +117,6 @@ abstract class SimpleEmitter extends TileEntity with ITickable with Rotatable wi
     SRails.log.info(s"effect added: $effect")
   }
 
-  protected def onEntityIntersect(entity: Entity) = {
-    for (effect: ForceFieldEffect <- effectsList.distinct) {
-      effect match {
-        case e: EffectOnIntersect =>
-          e.onEntityIntersect(entity, this)
-        case _ =>
-      }
-    }
-  }
 
   protected def registerBounds(aabb: AxisAlignedBB) = {
     for (effect: ForceFieldEffect <- effectsList.distinct) {
