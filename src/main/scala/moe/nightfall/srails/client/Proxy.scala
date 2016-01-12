@@ -6,11 +6,6 @@ import net.minecraft.block.Block
 import net.minecraft.item.Item
 import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPreInitializationEvent}
 
-
-object Proxy {
-
-}
-
 private[srails] class Proxy extends CommonProxy {
 
 
@@ -28,5 +23,5 @@ private[srails] class Proxy extends CommonProxy {
 
   override def registerModel(instance: Block, id: String) = ModelInitialization.registerModel(instance, id)
 
-  override def isClient = true
+  override val isClient = true
 }

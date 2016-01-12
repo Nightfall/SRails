@@ -1,8 +1,7 @@
 package moe.nightfall.srails.common.block.property
 
-import net.minecraft.block.properties.{PropertyBool, PropertyDirection}
+import net.minecraft.block.properties.PropertyDirection
 
 object PropertyRotatable {
-  final val FACING = PropertyDirection.create("facing")
-  final val REVERSE = PropertyBool.create("reverse")
+  final val ROTATION = PropertyDirection.create("facing")
 }

@@ -1,7 +1,4 @@
-package moe.nightfall.srails.common.tileentity.traits
-
-import java.lang.Math._
-import javax.vecmath.Vector3d
+package moe.nightfall.srails.util
 
 import moe.nightfall.srails.SRails
 import net.minecraft.client.Minecraft
@@ -19,12 +16,12 @@ import scala.collection.mutable
 
 object AntiGravity {
   final val g = 0.08D * 0.9800000190734863D
+  //0.0784000015258789 //Gravity
 
   //need that here but maybe move it later
   @SideOnly(Side.CLIENT)
   lazy val gameSettings = FMLClientHandler.instance.getClient.gameSettings
 
-  //0.0784000015258789 //Gravity
 
   @SideOnly(Side.CLIENT)
   private final val boundsSetClient = mutable.Set.empty[AxisAlignedBB]
@@ -45,11 +42,11 @@ object AntiGravity {
     //SRails.log.info(s"removed ${aabb.hashCode()} size: ${boundsSet(remote).size} ")
   }
 
-  def boundsSet(remote: Boolean): mutable.Set[AxisAlignedBB] = {
+  def boundsSet(remote: Boolean): scala.collection.mutable.Set[AxisAlignedBB] = {
     if (remote) boundsSetClient else boundsSet
   }
 
-  SRails.log.info(s"created companion object $this")
+  SRails.log.debug(s"created utility $this")
 
   //called from Proxy
   def onTickEvent(event: TickEvent) {
@@ -60,7 +57,7 @@ object AntiGravity {
 
       var world: World = null
       val entitySet = mutable.Set.empty[Entity]
-      var set: mutable.Set[AxisAlignedBB] = null
+      var set: scala.collection.mutable.Set[AxisAlignedBB] = null
       event match {
         case worldTickEvent: WorldTickEvent =>
           //maybe useless
@@ -83,36 +80,36 @@ object AntiGravity {
         entitySet.foreach(reverseGravity)
       }
     }
+
     def reverseGravity(e: Entity) {
+
       //reverse gravity
       e match {
         case p: EntityPlayerSP =>
-          if (Minecraft.getMinecraft.inGameHasFocus) {
-            val yaw: Double = p.rotationYaw * Math.PI / 180
-            val pitch: Double = p.rotationPitch * Math.PI / 180
-            val facing = new Vector3d(
-              -sin(yaw) * cos(pitch),
-              -sin(pitch),
-              cos(yaw) * cos(pitch)
-            )
-            SRails.log.info(s"rotaion yaw: $yaw pitch: $pitch cos(pitch): ${cos(pitch)} sin(pitch): ${sin(pitch)} vector: $facing")
+          if (!p.capabilities.isFlying && Minecraft.getMinecraft.inGameHasFocus) {
+            //counteract gravity I hope this doesnt break
+            p.motionY += g
+            /*
+            val yaw: Double = toRadians(p.rotationYaw)
+            val pitch: Double = toRadians(p.rotationPitch)
+            val heading = new Vector3d(-sin(yaw) * cos(pitch), -sin(pitch), cos(yaw) * cos(pitch))
+            val motion: Vector3d = new Vector3d(p.motionX, p.motionY, p.motionZ)
 
-            if (!p.capabilities.isFlying && Minecraft.getMinecraft.inGameHasFocus) {
-              //counteract gravity I hope this doesnt break
-              p.motionY += g
-              val motion: Vector3d = new Vector3d(p.motionX, p.motionY, p.motionZ)
-
-              if(gameSettings.keyBindForward.isKeyDown){
-                //TODO reverse default forward motion
-                //add forward motion
-                facing.scale(0.01)
-                motion.add(facing)
-              }
-              
-              p.motionX = motion.x
-              p.motionY = motion.y
-              p.motionZ = motion.z
+            p.movementInput.updatePlayerMoveState()
+            if (p.movementInput.moveForward != 0) {
+              //reverse default forward motion
+              val forward = new Vector3d(-sin(yaw), 0, cos(yaw))
+              forward.scale(0.02 * -p.movementInput.moveForward)
+              motion.add(forward)
+              //add forward motion
+              heading.scale(0.01 * p.movementInput.moveForward)
+              motion.add(heading)
             }
+
+            p.motionX = motion.x
+            p.motionY = motion.y
+            p.motionZ = motion.z
+            */
           }
         case _ =>
           e.motionY += g
@@ -121,9 +118,4 @@ object AntiGravity {
       //SRails.log.info(s"motionY ${e.motionY}")
     }
   }
-}
-
-
-trait AntiGravity {
-
 }
