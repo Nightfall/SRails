@@ -13,10 +13,9 @@
 package moe.nightfall.srails
 
 import moe.nightfall.srails.common.Proxy
-import net.minecraftforge.fml.common.{Mod, SidedProxy}
 import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostInitializationEvent, FMLPreInitializationEvent}
+import net.minecraftforge.fml.common.{Mod, SidedProxy}
 import org.apache.logging.log4j.LogManager
-;
 
 @Mod(modid = SRails.ID, name = SRails.Name, modLanguage = "scala")
 object SRails {

@@ -40,14 +40,22 @@ minecraft {
     // stable_#            stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not allways work.
     // simply re-run your setup task after changing the mappings to update your workspace.
-    mappings = "snapshot_20160105"
+    mappings = "stable_20"
 
-    //replace '@VERSION@', project.version //TODO setup version and mcmod.info
-    //replace '@MC_VERSION@', version
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_7
 targetCompatibility = JavaVersion.VERSION_1_7
+
+repositories {
+    maven { url "http://maven.amadornes.com/" }
+}
+dependencies {
+    //deobfCompile "MCMultiPart:MCMultiPart:1.0.3:universal"
+    //if we want to make multiparts later...
+
+}
+
 
 processResources {
     inputs.property "version", project.version
