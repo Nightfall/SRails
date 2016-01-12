@@ -1,5 +1,6 @@
 package moe.nightfall.srails.common.tileentity.effect
 
+import moe.nightfall.srails.SRails
 import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.entity.Entity
 import net.minecraft.util.AxisAlignedBB
@@ -37,25 +38,27 @@ object EffectOnTick {
           world = worldTickEvent.world
           for (effect: EffectOnWorldTick <- onWorldSet) {
             set = effect.boundsSet
-            for(entity <- entitySet(world, set)) {
+            for (entity <- entitySet(world, set)) {
               effect.onEntityIntersect(entity, worldTickEvent)
             }
           }
-
         case clientTickEvent: ClientTickEvent =>
-          val player: EntityPlayerSP = FMLClientHandler.instance.getClientPlayerEntity
-          if (player != null) {
-            world = player.worldObj
-          } else return
 
-          for (effect: EffectOnClientTick <- onClientSet) {
-            set = effect.boundsSetClient
-            for(entity <- entitySet(world, set)) {
-              effect.onEntityIntersect(entity, clientTickEvent)
+          if (SRails.proxy.isClient) {
+            val player: EntityPlayerSP = FMLClientHandler.instance.getClientPlayerEntity
+            if (player != null) {
+              world = player.worldObj
+            } else return
+
+            for (effect: EffectOnClientTick <- onClientSet) {
+              set = effect.boundsSetClient
+              for (entity <- entitySet(world, set)) {
+                effect.onEntityIntersect(entity, clientTickEvent)
+              }
             }
           }
-
         case _ =>
+
       }
     }
   }
@@ -64,17 +67,24 @@ object EffectOnTick {
   def registerBounds(effect: ForceFieldEffect, aabb: AxisAlignedBB): Unit = {
     effect match {
       case client: EffectOnClientTick =>
-        client.registerBoundsClient(aabb)
+       client.registerBoundsClient(aabb)
+      case _ =>
+    }
+    effect match {
       case world: EffectOnWorldTick =>
         world.registerBounds(aabb)
       case _ =>
     }
   }
 
+
   def unregisterBounds(effect: ForceFieldEffect, aabb: AxisAlignedBB): Unit = {
     effect match {
       case client: EffectOnClientTick =>
-        client.unregisterBoundsClient(aabb)
+       client.unregisterBoundsClient(aabb)
+      case _ =>
+    }
+    effect match {
       case world: EffectOnWorldTick =>
         world.unregisterBounds(aabb)
       case _ =>
@@ -88,13 +98,15 @@ trait EffectOnWorldTick extends EffectOnTick {
   val boundsSet = mutable.Set.empty[AxisAlignedBB]
 
   def registerBounds(aabb: AxisAlignedBB): Unit = {
-    if(boundsSet.isEmpty) EffectOnTick.onWorldSet += this
+    if (boundsSet.isEmpty) EffectOnTick.onWorldSet += this
     boundsSet += aabb
+    SRails.log.info(s"world register $aabb")
   }
 
   def unregisterBounds(aabb: AxisAlignedBB): Unit = {
     boundsSet -= aabb
-    if(boundsSet.isEmpty) EffectOnTick.onWorldSet -= this
+    if (boundsSet.isEmpty) EffectOnTick.onWorldSet -= this
+    SRails.log.info(s"world unregister $aabb")
   }
 
   def onEntityIntersect(entity: Entity, worldTick: WorldTickEvent): Unit
@@ -104,13 +116,15 @@ trait EffectOnClientTick extends EffectOnTick {
   val boundsSetClient = mutable.Set.empty[AxisAlignedBB]
 
   def registerBoundsClient(aabb: AxisAlignedBB): Unit = {
-    if(boundsSetClient.isEmpty) EffectOnTick.onClientSet += this
+    if (boundsSetClient.isEmpty) EffectOnTick.onClientSet += this
     boundsSetClient += aabb
+    SRails.log.info(s"client register $aabb")
   }
 
   def unregisterBoundsClient(aabb: AxisAlignedBB): Unit = {
     boundsSetClient -= aabb
-    if(boundsSetClient.isEmpty) EffectOnTick.onClientSet -= this
+    if (boundsSetClient.isEmpty) EffectOnTick.onClientSet -= this
+    SRails.log.info(s"client unregister $aabb")
   }
 
   def onEntityIntersect(entity: Entity, clientTickEvent: ClientTickEvent): Unit

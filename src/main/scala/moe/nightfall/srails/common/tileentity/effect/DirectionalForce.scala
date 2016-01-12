@@ -5,7 +5,7 @@ import javax.vecmath.Vector3d
 import moe.nightfall.srails.common.tileentity.SimpleEmitter
 import moe.nightfall.srails.common.tileentity.traits.Reversible
 import net.minecraft.entity.Entity
-import net.minecraft.util.{Vec3i, EnumFacing}
+import net.minecraft.util.{EnumFacing, Vec3i}
 
 object DirectionalForce extends MotionEffectOnIntersect {
 
@@ -16,7 +16,6 @@ object DirectionalForce extends MotionEffectOnIntersect {
       case EnumFacing.DOWN => 0.1
       case _ => 0.01
     }
-
 
     emitter match {
       case reversibleEmitter: Reversible =>

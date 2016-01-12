@@ -14,7 +14,7 @@ class MotionLimit (maxVelo: Double = 0.25) extends MotionEffectOnIntersect {
     if (motion.length > maxVelo) {
       //TODO simplify if possible
       val scale = 1 - (((motion.length - maxVelo) / 2) / motion.length())
-      motion.scale(scale)
+      motion.scale(scale, motion)
       //if (e.isInstanceOf[EntityPlayerSP]) {
       //SRails.log.info(s"scale: $scale")
       //}

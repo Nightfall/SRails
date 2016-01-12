@@ -19,7 +19,6 @@ object FloatingControl extends MotionEffectOnIntersect {
   }
 
   override def onEntityIntersect(motion: Vector3d, position: Vector3d, entity: Entity, emitter: SimpleEmitter): Vector3d = {
-
     //TODO Config sneaking for falling in forcefields
     if (entity.isSneaking) {
       motion.y -= 0.01

@@ -46,14 +46,15 @@ abstract class EffectOnIntersect extends ForceFieldEffect {
 object MotionEffectOnIntersect {
   def onEntityIntersect(entities: Seq[Entity], effectsList: ArrayBuffer[MotionEffectOnIntersect], emitter: SimpleEmitter) = {
     for (entity <- entities) {
+      var motion: Vector3d = new Vector3d(entity.motionX, entity.motionY, entity.motionZ)
       for (effect: MotionEffectOnIntersect <- effectsList.distinct) {
-        var motion: Vector3d = new Vector3d(entity.motionX, entity.motionY, entity.motionZ)
         val position = new Vector3d(entity.posX, entity.posY, entity.posZ)
-        motion = effect.onEntityIntersect(motion, position, entity, emitter)
-        entity.motionX = motion.x
-        entity.motionY = motion.y
-        entity.motionZ = motion.z
+        val motion2 = new Vector3d(motion.x, motion.y, motion.z)
+        motion = effect.onEntityIntersect(motion2, position, entity, emitter)
       }
+      entity.motionX = motion.x
+      entity.motionY = motion.y
+      entity.motionZ = motion.z
     }
   }
 }
@@ -64,9 +65,10 @@ abstract class MotionEffectOnIntersect extends EffectOnIntersect {
 
   //single call wrapper
   override def onEntityIntersect(entity: Entity, emitter: SimpleEmitter): Unit = {
-    var motion: Vector3d = new Vector3d(entity.motionX, entity.motionY, entity.motionZ)
+    val motion: Vector3d = new Vector3d(entity.motionX, entity.motionY, entity.motionZ)
     val position = new Vector3d(entity.posX, entity.posY, entity.posZ)
-    motion = onEntityIntersect(motion, position, entity, emitter)
+    val motion2 = new Vector3d(motion.x, motion.y, motion.z)
+    motion.add(onEntityIntersect(motion2, position, entity, emitter))
     entity.motionX = motion.x
     entity.motionY = motion.y
     entity.motionZ = motion.z

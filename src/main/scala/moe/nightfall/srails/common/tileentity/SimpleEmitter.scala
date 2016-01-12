@@ -15,6 +15,8 @@ import scala.util.Random
 
 abstract class SimpleEmitter extends TileEntity with ITickable with Rotatable with Effectable {
 
+  val instance = this
+
   lazy val fieldOffsets: Array[Int] = Array(-1, 32, 2, 2, 2, 2)
 
   protected var forceFieldBounds: AxisAlignedBB = null
@@ -99,7 +101,7 @@ abstract class SimpleEmitter extends TileEntity with ITickable with Rotatable wi
     }
     val buf: Seq[Entity] = getWorld.getEntitiesWithinAABB(classOf[Entity], forceFieldBounds).asScala
 
-    EffectOnIntersect.onEntityIntersect(buf, effectsList, this)
+    EffectOnIntersect.onEntityIntersect(buf, effectsList, instance)
 
     val r = new Random()
     if (getWorld.isRemote) {

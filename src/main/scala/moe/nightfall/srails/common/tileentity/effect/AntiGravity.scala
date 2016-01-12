@@ -8,7 +8,7 @@ import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.gameevent.TickEvent.{ClientTickEvent, WorldTickEvent}
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 
-object AntiGravity extends EffectOnClientTick with EffectOnWorldTick{
+object AntiGravity extends  EffectOnWorldTick with EffectOnClientTick{
   final val g = 0.08D * 0.9800000190734863D
   //0.0784000015258789 //Gravity
 
@@ -23,31 +23,17 @@ object AntiGravity extends EffectOnClientTick with EffectOnWorldTick{
     entity.motionY += g
   }
 
-  override def onEntityIntersect(entity: Entity, clientTickEvent: ClientTickEvent): Unit = {
+  @SideOnly(Side.CLIENT)
+  def onEntityIntersect(entity: Entity, clientTickEvent: ClientTickEvent): Unit = {
     entity match {
       case p: EntityPlayerSP =>
         if (!p.capabilities.isFlying && Minecraft.getMinecraft.inGameHasFocus) {
           //counteract gravity I hope this doesnt break
           p.motionY += g
+         // p.posY = p.lastTickPosY
         }
       case _ =>
         entity.motionY += g
     }
   }
-  def reverseGravity(e: Entity) {
-
-      //reverse gravity
-      e match {
-        case p: EntityPlayerSP =>
-          if (!p.capabilities.isFlying && Minecraft.getMinecraft.inGameHasFocus) {
-            //counteract gravity I hope this doesnt break
-            p.motionY += g
-          }
-        case _ =>
-          e.motionY += g
-      }
-
-      //SRails.log.info(s"motionY ${e.motionY}")
-    }
-
 }

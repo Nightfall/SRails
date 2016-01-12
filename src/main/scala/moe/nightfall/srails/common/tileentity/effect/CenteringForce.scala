@@ -21,9 +21,9 @@ object CenteringForce extends MotionEffectOnIntersect{
       relativeVector.sub(entityPos)
     val temp: Vector3d = new Vector3d()
 
-    temp.cross(axis, relativeVector)
+    temp.cross(relativeVector, axis)
 
-    relativeVector.cross(temp, axis)
+    relativeVector.cross(axis, temp)
 
     relativeVector
   }

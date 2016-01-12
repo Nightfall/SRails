@@ -14,7 +14,7 @@ trait Rotatable extends TileEntity{
       getWorld.getBlockState(getPos).getValue(rotatableProperty)
     } else {
       SRails.log.info("facing return default value")
-      EnumFacing.UP
+      null
     }
   }
 }
