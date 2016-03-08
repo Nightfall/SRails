@@ -1,5 +1,6 @@
 # SRails [![Jenkins Build Status](http://img.shields.io/jenkins/s/http/jenkins.rx14.co.uk/job/Nightfall/SRails.svg?style=flat-square)](http://jenkins.rx14.co.uk/job/Nightfall/job/SRails/) [![Travis build staus](https://img.shields.io/travis/Nightfall/SRails/master.svg?style=flat-square)](https://travis-ci.org/Nightfall/SRails/branches)
 
+currently not being worked on as i do not feel up to it, this project is currently frozen
 
 A few useful links:
 * [Bug Tracker][issues]
